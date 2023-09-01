@@ -3,45 +3,14 @@ package com.chacha.igexperimentspatcher;
 import brut.androlib.ApkDecoder;
 import brut.androlib.Config;
 import brut.androlib.exceptions.AndrolibException;
-import brut.androlib.mod.SmaliMod;
 import brut.directory.DirectoryException;
 import brut.directory.ExtFile;
-import jadx.api.JavaClass;
-import jadx.api.JavaMethod;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.util.ArrayList;
 import java.util.List;
 
 public class ApkUtils {
     private File out;
-    //private JadxDecompiler jadx;
-    /*public void decompile(String path){
-        System.out.println("Decompiling: " + path + "...");
-        File inputFile = new File(path);
-        File outputDir = new File("decompiled");
-        JadxArgs args = new JadxArgs();
-        args.setInputFile(inputFile);
-        args.setOutDir(outputDir);
-        args.setSkipResources(true);
-        args.setDeobfuscationOn(false);
-        args.setThreadsCount(2);
-        args.setCodeWriterProvider(SimpleCodeWriter::new);
-        args.setCodeCache(new NoOpCodeCache());
-
-        try {
-            jadx = new JadxDecompiler(args);
-            jadx.load();
-            jadx.save();
-
-            System.out.println("Decompiled: " + outputDir.getAbsolutePath());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }*/
-
     public void decompile(String path){
         ExtFile apk = new ExtFile(new File(path));
         out = new File(apk.getName() + ".out");
