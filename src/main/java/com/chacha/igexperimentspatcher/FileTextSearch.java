@@ -79,4 +79,20 @@ public class FileTextSearch {
             return false;
         }
     }
+
+    public static File searchClassFile(File directory,  String className){
+        File[] files = directory.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory() && file.getName().equals("X")) {
+                    System.out.println("\u001B Searching for "+ className + " in folder: " + file.getAbsolutePath());
+                    searchClassFile(file, className);
+                } else if (file.isFile() && file.getName().equals(className)) {
+                    System.out.println("\u001B Found class file: " + file.getAbsolutePath());
+                    return file;
+                }
+            }
+        }
+        return null;
+    }
 }

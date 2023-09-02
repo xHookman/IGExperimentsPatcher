@@ -40,6 +40,10 @@ public class ApkUtils {
         }
      }
 
+     public File getOutDir() {
+         return out;
+     }
+
      private void compile(ExtFile smaliDir, File dexFile) throws BrutException {
         if(dexFile.exists()) {
             System.out.println("dex file already exists, skipping compilation");
