@@ -3,7 +3,8 @@ package com.chacha.igexperimentspatcher;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -80,19 +81,23 @@ public class FileTextSearch {
         }
     }
 
-    public static File searchClassFile(File directory,  String className){
-        File[] files = directory.listFiles();
-        if (files != null) {
-            for (File file : files) {
-                if (file.isDirectory() && file.getName().equals("X")) {
-                    System.out.println("\u001B Searching for "+ className + " in folder: " + file.getAbsolutePath());
-                    searchClassFile(file, className);
-                } else if (file.isFile() && file.getName().equals(className)) {
-                    System.out.println("\u001B Found class file: " + file.getAbsolutePath());
-                    return file;
+    public static void searchSmaliFiles(String folderPath, final String classNameToFind) throws IOException {
+        Path start = Paths.get(folderPath);
+
+        Files.walkFileTree(start, new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                if (Files.isRegularFile(file) && file.toString().endsWith(".smali")) {
+                    // Read the content of the Smali file
+                    String content = new String(Files.readAllBytes(file), "UTF-8");
+
+                    // Check if the class name exists in the Smali file
+                    if (content.contains(classNameToFind)) {
+                        System.out.println("Class found in Smali file: " + file);
+                    }
                 }
+                return FileVisitResult.CONTINUE;
             }
-        }
-        return null;
+        });
     }
 }

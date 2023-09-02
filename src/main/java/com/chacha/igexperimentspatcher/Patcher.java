@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 public class Patcher {
     private final File apkFile;
     private ApkUtils apkUtils;
-    private String method;
+    private String method, methodToPatch, classToPatch;
     private File fileToRecompile;
     public Patcher(File apkFile){
         System.out.println("patcher constructor");
@@ -42,6 +42,11 @@ public class Patcher {
 
     private String extractMethodName() {
         return method;
+    }
+
+    private String getMethodContent(String method, String code){
+
+        return null;
     }
     private String searchMethodContentForExperiments(File file) throws IOException {
         boolean inMethod = false;
@@ -85,11 +90,9 @@ public class Patcher {
             System.out.println("No method found for experiments");
             return null;
         }
-        //System.out.println("Method content: " + methodContent);
         String methodToPatch = extractMethodName();
         String classToPatch;
 
-        System.out.println("Method to patch: " + methodToPatch);
         Pattern pattern = Pattern.compile("invoke-static \\{[^\\}]+\\}, ([^;]+);->(\\w+)\\(");
         Matcher matcher;
 
@@ -109,11 +112,10 @@ public class Patcher {
 
                         String methodName = matcher.group(2);
 
-                        System.out.println("Class to patch: " + classToPatch);
-                        System.out.println("Method to patch: " + methodName);
+                        this.classToPatch = classToPatch;
+                        this.methodToPatch = methodName;
 
                         return classToPatch;
-                        //System.out.println("Method name is " + matcher.group(4));
                     }
                 }
             }
@@ -121,28 +123,19 @@ public class Patcher {
         return null;
     }
 
-    private void replaceMethodInFile(File file) throws IOException {
+    private void findAndPatchMethod(File file) throws IOException {
         String methodContent = searchMethodContentForExperiments(file);
         String classToPatch = findClassToPatch(methodContent, file);
+        File fileToPatch = FileTextSearch.searchClassFile(apkUtils.getOutDir(), classToPatch);
+        System.out.println("File to patch: " + fileToPatch.getAbsolutePath());
+        //
+        System.out.println("Class to patch: " + classToPatch);
+        System.out.println("Method to patch: " + methodToPatch);
     }
 
     private void enableExperiments(File file) throws IOException {
         System.out.println("Enabling experiments...");
-        //String methodContent = searchMethodContentForExperiments(file.getAbsolutePath());
-       /* if(methodContent == null) {
-            System.out.println("No method content found for experiments");
-            return;
-        }*/
-
-       // methodContent = methodContent.replaceAll("invoke-static \\{p1}, LX/[A-Z0-9]+;->A0[0-9]+\\(.+?\\)Z", "const/4 v0, 0x1");
-       // System.out.println("Patched method content:\n");
-       // System.out.println(methodContent);
-        /* Example of the line in smali code:
-               invoke-static {p1}, LX/1D4;->A00(LX/0e2;)Z
-         */
-
-
-        replaceMethodInFile(file);
+        findAndPatchMethod(file);
         System.out.println("Experiments enabled successfully.");
     }
 
