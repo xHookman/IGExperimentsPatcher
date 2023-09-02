@@ -14,7 +14,7 @@ public class Patcher {
         this.apkFile = apkFile;
     }
 
-    public void patch() throws BrutException {
+    public void patch() throws BrutException, IOException {
         System.out.println("Patching: " + apkFile.getAbsolutePath());
         this.apkUtils = new ApkUtils();
         if(new File("decompiled").exists()) {
@@ -31,7 +31,7 @@ public class Patcher {
             throw new RuntimeException(e);
         }
 
-        apkUtils.compile(new ExtFile(this.getFileToRecompile()));
+        apkUtils.compileToApk(apkFile, new ExtFile(getFileToRecompile()));
     }
 
     // trouver et renvoyer le nom de la méthode à patcher,
@@ -152,7 +152,7 @@ public class Patcher {
         fileToRecompile = currentFile;
     }
     public File getFileToRecompile(){
-        System.out.println("File to recompile: " + fileToRecompile.getAbsolutePath());
         return fileToRecompile;
     }
+
 }
