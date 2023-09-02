@@ -16,6 +16,7 @@ dependencies {
     implementation 'io.github.skylot:jadx-core:1.4.7'
     implementation group: 'io.github.skylot', name: 'jadx-java-convert', version: '1.4.7'
     compileOnly files('libs/apktool_2.8.1.jar')
+    compileOnly files('libs/baksmali-2.5.2.jar')
 }
 
 test {

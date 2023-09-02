@@ -3,6 +3,8 @@ package com.chacha.igexperimentspatcher;
 import brut.androlib.ApkDecoder;
 import brut.androlib.Config;
 import brut.androlib.exceptions.AndrolibException;
+import brut.androlib.src.SmaliBuilder;
+import brut.common.BrutException;
 import brut.directory.DirectoryException;
 import brut.directory.ExtFile;
 import java.io.File;
@@ -11,8 +13,8 @@ import java.util.List;
 
 public class ApkUtils {
     private File out;
-    public void decompile(String path){
-        ExtFile apk = new ExtFile(new File(path));
+    public void decompile(File apkFile) {
+        ExtFile apk = new ExtFile(apkFile);
         out = new File(apk.getName() + ".out");
         if(out.exists()) {
             System.out.println("decompiled folder already exists, skipping decompilation");
@@ -24,16 +26,21 @@ public class ApkUtils {
         } catch (AndrolibException | IOException | DirectoryException e) {
             throw new RuntimeException(e);
         }
-        System.out.println("Decompiled: " + out.getAbsolutePath());
     }
 
-     public List<File> getFileForExperiments(){
+
+    public List<File> getFileForExperiments(){
         System.out.println("Searching for experiments file...");
         try {
            return FileTextSearch.searchFilesWithTextInDirectories(out, "const-string v0, \"is_employee\"");
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+     }
+
+     public void compile(ExtFile file) throws BrutException {
+        System.out.println("Compiling: " + file);
+        SmaliBuilder.build(file, new File(file.getName().replace("smali_", "") + ".dex"), 28);
      }
 
         /* VERSION 299.0.0.0.96

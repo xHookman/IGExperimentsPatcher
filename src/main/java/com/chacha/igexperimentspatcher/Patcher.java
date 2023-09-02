@@ -1,33 +1,37 @@
 package com.chacha.igexperimentspatcher;
 
+import brut.common.BrutException;
+import brut.directory.ExtFile;
 import java.io.*;
-import java.util.List;
 
 public class Patcher {
-    private final String pathToApk;
+    private final File apkFile;
+    private ApkUtils apkUtils;
     private String methodToPatch;
-    public Patcher(String pathToApk){
+    private File fileToRecompile;
+    public Patcher(File apkFile){
         System.out.println("patcher constructor");
-        this.pathToApk = pathToApk;
+        this.apkFile = apkFile;
     }
 
-    public void patch() {
-        System.out.println("Patching: " + pathToApk);
-        ApkUtils apkUtils = new ApkUtils();
-        /*if(new File("decompiled").exists()) {
+    public void patch() throws BrutException {
+        System.out.println("Patching: " + apkFile.getAbsolutePath());
+        this.apkUtils = new ApkUtils();
+        if(new File("decompiled").exists()) {
             System.out.println("decompiled folder already exists, skipping decompilation");
-        } else*/
-            apkUtils.decompile(pathToApk);
+        } else
+            apkUtils.decompile(apkFile);
 
-        List<File> f = apkUtils.getFileForExperiments();
-       // System.out.println("Found experiments file: " + f);
+       // List<File> f = apkUtils.getFileForExperiments();
         try {
             //DEBUG
-            //File patchFile = new File("ig.apk.out/smali_classes5/X/Bh4.smali");
-            enableExperiments(f.get(0));
+            File patchFile = new File("ig.apk.out/smali_classes5/X/Bh4.smali");
+            enableExperiments(patchFile);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
+        apkUtils.compile(new ExtFile(this.getFileToRecompile()));
     }
 
     // trouver et renvoyer le nom de la méthode à patcher,
@@ -37,11 +41,11 @@ public class Patcher {
     private String extractMethodName() {
         return methodToPatch;
     }
-    private String searchMethodContentForExperiments(String filePath) throws IOException {
+    private String searchMethodContentForExperiments(File file) throws IOException {
         boolean inMethod = false;
         StringBuilder methodContent = new StringBuilder();
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (line.trim().startsWith(".method public static")) {
@@ -57,6 +61,8 @@ public class Patcher {
 
                         // Check if the method contains the search text
                         if (methodContent.toString().contains("is_employee")) {
+                            System.out.println("Found method for experiments");
+                            setFileToRecompile(file);
                             return methodContent.toString();
                         }
                     }
@@ -67,8 +73,9 @@ public class Patcher {
         return null;
     }
 
-    private void replaceMethodInFile(String filePath) throws IOException {
-        String methodContent = searchMethodContentForExperiments(filePath);
+    private void replaceMethodInFile(File file) throws IOException {
+        String methodContent = searchMethodContentForExperiments(file);
+
         boolean inMethod = false;
         if (methodContent == null) {
             System.out.println("No method found for experiments");
@@ -79,7 +86,7 @@ public class Patcher {
         StringBuilder originalContent = new StringBuilder();
 
         System.out.println("Method to patch: " + methodToPatch);
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (line.trim().startsWith(methodToPatch)) {
@@ -107,7 +114,7 @@ public class Patcher {
             }
 
             // Write the modified content back to the Smali file
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
                 writer.write(originalContent.toString());
             }
 
@@ -131,7 +138,21 @@ public class Patcher {
          */
 
 
-        replaceMethodInFile(file.getAbsolutePath());
+        replaceMethodInFile(file);
         System.out.println("Experiments enabled successfully.");
+    }
+
+    private void setFileToRecompile(File file){
+        File currentFile = file.getAbsoluteFile();
+
+        // Iterate until we reach the root directory
+        while (!currentFile.getName().startsWith("smali_")) {
+            currentFile = currentFile.getParentFile();
+        }
+        fileToRecompile = currentFile;
+    }
+    public File getFileToRecompile(){
+        System.out.println("File to recompile: " + fileToRecompile.getAbsolutePath());
+        return fileToRecompile;
     }
 }
