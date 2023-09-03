@@ -10,25 +10,23 @@ import java.util.regex.Pattern;
 public class Patcher {
     private final File apkFile;
     private ApkUtils apkUtils;
-    private String method, methodToPatch, classToPatch;
+    private String method, methodToPatch;
     private File fileToRecompile;
     public Patcher(File apkFile){
         System.out.println("patcher constructor");
         this.apkFile = apkFile;
     }
 
-    public void patch() throws BrutException, IOException {
+    public void patch() throws BrutException {
         System.out.println("Patching: " + apkFile.getAbsolutePath());
         this.apkUtils = new ApkUtils();
-        if(new File("decompiled").exists()) {
+      /*  if(new File(apkFile.getName() + ".out").exists()) {
             System.out.println("decompiled folder already exists, skipping decompilation");
-        } else
+        } else*/
             apkUtils.decompile(apkFile);
 
         List<File> f = apkUtils.getFileForExperiments();
         try {
-            //DEBUG
-            //File patchFile = new File("ig.apk.out/smali_classes5/X/Bh4.smali");
             enableExperiments(f.get(0));
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
@@ -36,10 +34,6 @@ public class Patcher {
 
         apkUtils.compileToApk(apkFile, new ExtFile(getFileToRecompile()));
     }
-
-    // trouver et renvoyer le nom de la méthode à patcher,
-    // chercher dans le fichier smali la méthode complète avec ce nom
-    // remplacer la ligne avec le regex par const/4 v0, 0x1
 
     private String extractMethodName() {
         return method;
@@ -105,7 +99,6 @@ public class Patcher {
 
                         String methodName = matcher.group(2);
 
-                        this.classToPatch = classToPatch;
                         this.methodToPatch = methodName;
 
                         return classToPatch;

@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -97,33 +96,6 @@ public class FileTextSearch {
             return false;
         }
     }
-
-   /* public static File findSmaliFile(String directoryPath, String smaliFileName) {
-        File directory = new File(directoryPath);
-
-        if (!directory.exists()) {
-            System.out.println("Directory not found: " + directoryPath);
-            return null;
-        }
-
-        if (directory.isDirectory()) {
-            File[] files = directory.listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    if (file.isDirectory() && file.getName().startsWith("smali")) {
-                        System.out.println("Searching in directory: " + file.getAbsolutePath());
-                        // Recursively search in subdirectories named "smali_classesX"
-                        findSmaliFile(file.getAbsolutePath() + File.separator + "X", smaliFileName);
-                    } else if (file.isFile() && file.getName().equals(smaliFileName)) {
-                        // Found the desired Smali file
-                        System.out.println("Found Smali file: " + file.getAbsolutePath());
-                        return file;
-                    }
-                }
-            }
-        }
-        return null;
-    }*/
 
     public static List<File> findSmaliFile(File root, String fileToSearch) throws InterruptedException {
         List<File> result = new ArrayList<>();
