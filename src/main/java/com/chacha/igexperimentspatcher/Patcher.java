@@ -29,7 +29,7 @@ public class Patcher {
             //DEBUG
             File patchFile = new File("ig.apk.out/smali_classes5/X/Bh4.smali");
             enableExperiments(patchFile);
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
 
@@ -80,10 +80,6 @@ public class Patcher {
         return null;
     }
 
-    private void findAndPatchMethod(String className, String methodName){
-        File classToPatch = FileTextSearch.searchClassFile(apkUtils.getOutDir(), className);
-    }
-
     private String findClassToPatch(String methodContent, File file) throws IOException {
         boolean inMethod = false;
         if (methodContent == null) {
@@ -123,17 +119,24 @@ public class Patcher {
         return null;
     }
 
-    private void findAndPatchMethod(File file) throws IOException {
-        String methodContent = searchMethodContentForExperiments(file);
-        String classToPatch = findClassToPatch(methodContent, file);
-        File fileToPatch = FileTextSearch.searchClassFile(apkUtils.getOutDir(), classToPatch);
-        System.out.println("File to patch: " + fileToPatch.getAbsolutePath());
-        //
-        System.out.println("Class to patch: " + classToPatch);
-        System.out.println("Method to patch: " + methodToPatch);
+    private void patchMethod(File classFileToPatch, String methodToPatch){
+
     }
 
-    private void enableExperiments(File file) throws IOException {
+    private void findAndPatchMethod(File file) throws IOException, InterruptedException {
+        String methodContent = searchMethodContentForExperiments(file);
+        String classToPatch = findClassToPatch(methodContent, file);
+
+        System.out.println("Class to patch: " + classToPatch);
+        System.out.println("Method to patch: " + methodToPatch);
+
+        File fileToPatch = FileTextSearch.findSmaliFile(apkUtils.getOutDir(), classToPatch + ".smali").get(0);
+        System.out.println("File to patch: " + fileToPatch.getAbsolutePath());
+        setFileToRecompile(fileToPatch);
+        patchMethod(fileToPatch, methodToPatch);
+    }
+
+    private void enableExperiments(File file) throws IOException, InterruptedException {
         System.out.println("Enabling experiments...");
         findAndPatchMethod(file);
         System.out.println("Experiments enabled successfully.");

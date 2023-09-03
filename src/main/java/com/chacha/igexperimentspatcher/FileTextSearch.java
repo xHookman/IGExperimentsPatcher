@@ -48,7 +48,24 @@ public class FileTextSearch {
         return result;
     }
 
-    public static List<File> searchFilesWithText(File directory, String searchText) {
+    private static List<File> searchInFolder(File folder, String fileName){
+        List<File> result = new ArrayList<>();
+        File[] files = folder.listFiles();
+        if(files != null){
+            for(File file : files){
+                if(file.isDirectory() && file.getName().equals("X")){
+                    System.out.println("\u001B Searching in directory: " + file.getAbsolutePath());
+                    result.addAll(searchInFolder(file, fileName));
+                } else if(file.isFile() && file.getName().equals(fileName)){
+                    System.out.println("\u001B Found file: " + file.getAbsolutePath());
+                    result.add(file);
+                }
+            }
+        }
+        return result;
+    }
+
+    private static List<File> searchFilesWithText(File directory, String searchText) {
         List<File> result = new ArrayList<>();
         File[] files = directory.listFiles();
         if (files != null) {
@@ -81,23 +98,62 @@ public class FileTextSearch {
         }
     }
 
-    public static void searchSmaliFiles(String folderPath, final String classNameToFind) throws IOException {
-        Path start = Paths.get(folderPath);
+   /* public static File findSmaliFile(String directoryPath, String smaliFileName) {
+        File directory = new File(directoryPath);
 
-        Files.walkFileTree(start, new SimpleFileVisitor<Path>() {
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                if (Files.isRegularFile(file) && file.toString().endsWith(".smali")) {
-                    // Read the content of the Smali file
-                    String content = new String(Files.readAllBytes(file), "UTF-8");
+        if (!directory.exists()) {
+            System.out.println("Directory not found: " + directoryPath);
+            return null;
+        }
 
-                    // Check if the class name exists in the Smali file
-                    if (content.contains(classNameToFind)) {
-                        System.out.println("Class found in Smali file: " + file);
+        if (directory.isDirectory()) {
+            File[] files = directory.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    if (file.isDirectory() && file.getName().startsWith("smali")) {
+                        System.out.println("Searching in directory: " + file.getAbsolutePath());
+                        // Recursively search in subdirectories named "smali_classesX"
+                        findSmaliFile(file.getAbsolutePath() + File.separator + "X", smaliFileName);
+                    } else if (file.isFile() && file.getName().equals(smaliFileName)) {
+                        // Found the desired Smali file
+                        System.out.println("Found Smali file: " + file.getAbsolutePath());
+                        return file;
                     }
                 }
-                return FileVisitResult.CONTINUE;
             }
-        });
+        }
+        return null;
+    }*/
+
+    public static List<File> findSmaliFile(File root, String fileToSearch) throws InterruptedException {
+        List<File> result = new ArrayList<>();
+
+        if (root.isDirectory()) {
+            File[] directories = root.listFiles((file, name) -> name.startsWith("smali") && new File(file, name).isDirectory());
+
+            if (directories != null) {
+                ExecutorService executor = Executors.newFixedThreadPool(directories.length);
+
+                List<Future<List<File>>> futures = new ArrayList<>();
+
+                for (File directory : directories) {
+                    System.out.println("\u001B Searching in directory: " + directory.getAbsolutePath());
+                    futures.add(executor.submit(() -> searchInFolder(directory, fileToSearch)));
+                }
+
+                for (Future<List<File>> future : futures) {
+                    try {
+                        result.addAll(future.get());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                executor.shutdown();
+                executor.awaitTermination(1, TimeUnit.MINUTES);
+            }
+        }
+
+        return result;
     }
 }
