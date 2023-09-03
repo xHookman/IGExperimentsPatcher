@@ -3,6 +3,7 @@ package com.chacha.igexperimentspatcher;
 import brut.common.BrutException;
 import brut.directory.ExtFile;
 import java.io.*;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -24,16 +25,16 @@ public class Patcher {
         } else
             apkUtils.decompile(apkFile);
 
-       // List<File> f = apkUtils.getFileForExperiments();
+        List<File> f = apkUtils.getFileForExperiments();
         try {
             //DEBUG
-            File patchFile = new File("ig.apk.out/smali_classes5/X/Bh4.smali");
-            enableExperiments(patchFile);
+            //File patchFile = new File("ig.apk.out/smali_classes5/X/Bh4.smali");
+            enableExperiments(f.get(0));
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
 
-        //apkUtils.compileToApk(apkFile, new ExtFile(getFileToRecompile()));
+        apkUtils.compileToApk(apkFile, new ExtFile(getFileToRecompile()));
     }
 
     // trouver et renvoyer le nom de la méthode à patcher,
@@ -44,10 +45,6 @@ public class Patcher {
         return method;
     }
 
-    private String getMethodContent(String method, String code){
-
-        return null;
-    }
     private String searchMethodContentForExperiments(File file) throws IOException {
         boolean inMethod = false;
         StringBuilder methodContent = new StringBuilder();
@@ -119,8 +116,39 @@ public class Patcher {
         return null;
     }
 
-    private void patchMethod(File classFileToPatch, String methodToPatch){
+    private void makeMethodReturnTrue(File classFileToPatch, String methodToPatch){
+        System.out.println("Patching method...");
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(classFileToPatch));
+            StringBuilder stringBuilder = new StringBuilder();
+            String line;
+            boolean inMethod = false;
+            while ((line = reader.readLine()) != null) {
+                if (line.trim().startsWith(".method public static final " + methodToPatch)) {
+                    System.out.println("In method: " + line);
+                    // Start of a new method
+                    inMethod = true;
+                } else if (inMethod) {
+                    System.out.println("Actual line: " + line);
+                    if (line.trim().contains("return")) {
+                        System.out.println("Patching line: " + line);
+                        // Replace the line with the patched line
+                        line = "const/4 v0, 0x1\nreturn v0\n";
+                        inMethod = false;
+                    }
+                }
+                stringBuilder.append(line).append("\n");
+            }
+            reader.close();
 
+            // Write the patched method to the file
+            FileWriter writer = new FileWriter(classFileToPatch);
+            writer.write(stringBuilder.toString());
+            writer.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        System.out.println("Method patched successfully.");
     }
 
     private void findAndPatchMethod(File file) throws IOException, InterruptedException {
@@ -133,7 +161,7 @@ public class Patcher {
         File fileToPatch = FileTextSearch.findSmaliFile(apkUtils.getOutDir(), classToPatch + ".smali").get(0);
         System.out.println("File to patch: " + fileToPatch.getAbsolutePath());
         setFileToRecompile(fileToPatch);
-        patchMethod(fileToPatch, methodToPatch);
+        makeMethodReturnTrue(fileToPatch, methodToPatch);
     }
 
     private void enableExperiments(File file) throws IOException, InterruptedException {
@@ -146,7 +174,7 @@ public class Patcher {
         File currentFile = file.getAbsoluteFile();
 
         // Iterate until we reach the root directory
-        while (!currentFile.getName().startsWith("smali_")) {
+        while (!currentFile.getName().startsWith("smali")) {
             currentFile = currentFile.getParentFile();
         }
         fileToRecompile = currentFile;
