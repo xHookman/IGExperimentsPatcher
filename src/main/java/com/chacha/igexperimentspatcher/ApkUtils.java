@@ -16,6 +16,11 @@ import java.util.List;
 
 public class ApkUtils {
     private File out;
+
+    /**
+     * Decompile an apk file
+     * @param apkFile the apk file to decompile
+     */
     public void decompile(File apkFile) {
         ExtFile apk = new ExtFile(apkFile);
         out = new File(apk.getName() + ".out");
@@ -31,7 +36,9 @@ public class ApkUtils {
         }
     }
 
-
+    /**
+     * @return the file containing the call to the method that enable experiments
+     */
     public List<File> getFileForExperiments(){
         System.out.println("Searching for experiments file...");
         try {
@@ -41,20 +48,31 @@ public class ApkUtils {
         }
      }
 
+     /**
+      * @return the out directory where the apk was decompiled
+      */
      public File getOutDir() {
          return out;
      }
 
-     private void compile(ExtFile smaliDir, File dexFile) throws BrutException {
-        if(dexFile.exists()) {
+        /**
+        * Compile a smali directory to dex
+        */
+     private void compileSmaliToDex(ExtFile smaliDir, File dexFile) throws BrutException {
+        /*if(dexFile.exists()) {
             System.out.println("dex file already exists, skipping compilation");
             return;
-        }
+        }*/
 
         System.out.println("Compiling " + smaliDir + " to dex...");
         SmaliBuilder.build(smaliDir, dexFile, 0);
      }
 
+    /**
+     * Compile a smali directory to dex and copy it to the apk
+     * @param apkFile the apk to copy the dex file to
+     * @param smaliFile the smali directory to compile
+     */
      public void compileToApk(File apkFile, ExtFile smaliFile) throws BrutException {
         Integer classesDexCount = Integer.getInteger(smaliFile.getName());
          String fileName;
@@ -64,18 +82,26 @@ public class ApkUtils {
             fileName = "classes.dex";
 
         File dexFile = new File(fileName);
-        compile(smaliFile, dexFile);
+         compileSmaliToDex(smaliFile, dexFile);
          try {
              copyCompiledFileToApk(apkFile, dexFile);
          } catch (IOException e) {
              throw new RuntimeException(e);
          }
+         dexFile.delete();
      }
 
 
+    /**
+     * Copy a compiled dex file to the apk
+     * @param apkFile the apk to copy the dex file to
+     * @param dexFile the dex file to copy
+     */
     private void copyCompiledFileToApk(File apkFile, File dexFile) throws IOException {
         System.out.println("Copying compiled " + dexFile.getName() + " to APK...");
         File newApk = new File(apkFile.getAbsolutePath().replace(".apk", "-patched.apk"));
+        if(newApk.exists())
+            newApk.delete();
         Files.copy(apkFile.toPath(), newApk.toPath());
 
         ZipParameters zipParameters = new ZipParameters();
