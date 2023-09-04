@@ -2,7 +2,7 @@
 
 Enable developer options & experiments access in Instagram apk!
 
-You can also just get the method name and class name for my [Xposed module](https://github.com/xHookman/IGExperimentsPatcher) instead of patching an existing apk
+Or you can also just get the method name and class name for my [Xposed module](https://github.com/xHookman/IGExperimentsPatcher) instead of patching an existing apk
 
 ## Usage
 
