@@ -41,6 +41,6 @@ public static void main(String[] args) throws BrutException, IOException {
         }
 
         private static void showUsageError(){
-            System.out.println("No arguments provided. Usage: java -jar igexperimentspatcher.jar -p <path to apk>\nUse -x if you only need the class and method to patch (for xposed module).");
+            System.out.println("No arguments provided. Usage: java -jar IGExperimentsPatcher.jar -p <path to apk>\nUse -x if you only need the class and method to patch (for xposed module).");
         }
 }
