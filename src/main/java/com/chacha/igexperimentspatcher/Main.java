@@ -6,14 +6,41 @@ import java.io.File;
 import java.io.IOException;
 
 public class Main {
-    public static void main(String[] args) throws BrutException, IOException {
+public static void main(String[] args) throws BrutException, IOException {
         System.out.println("Hello world!");
         if(args.length == 0) {
-            System.out.println("No arguments provided.");
+            showUsageError();
             return;
         }
-        String path = args[0];
+
+        String path = null;
+        boolean forXposed = false;
+        int i;
+
+        for(i=0; i<args.length; i++) {
+            if(args[i].equals("-p")) {
+                path = args[i+1];
+            }
+
+            if(args[i].equals("-x")) {
+                forXposed = true;
+            }
+        }
+
+        if(path == null) {
+            showUsageError();
+            return;
+        }
+
         Patcher patcher = new Patcher(new File(path));
-        patcher.patch();
-    }
+
+        if(forXposed)
+            patcher.whatToPatch();
+        else
+            patcher.patch();
+        }
+
+        private static void showUsageError(){
+            System.out.println("No arguments provided. Usage: java -jar igexperimentspatcher.jar -p <path to apk>\nUse -x if you only need the class and method to patch (for xposed module).");
+        }
 }

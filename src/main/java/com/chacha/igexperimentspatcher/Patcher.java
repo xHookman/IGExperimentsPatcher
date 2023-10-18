@@ -10,10 +10,23 @@ import java.util.regex.Pattern;
 public class Patcher {
     private final File apkFile;
     private ApkUtils apkUtils;
-    private String methodToPatch;
+    private String methodToPatch, classToPatch;
     private File fileToRecompile;
     public Patcher(File apkFile){
         this.apkFile = apkFile;
+    }
+
+    /**
+     * Find the class and method to patch
+     */
+    public void whatToPatch() throws IOException {
+        this.apkUtils = new ApkUtils();
+        apkUtils.decompile(apkFile);
+        List<File> f = apkUtils.getFileForExperiments();
+
+        classToPatch = findClassToPatch(f.get(0));
+        System.out.println("Class to patch: " + classToPatch);
+        System.out.println("Method to patch: " + methodToPatch);
     }
 
     /**
@@ -21,12 +34,10 @@ public class Patcher {
      */
     public void patch() throws BrutException {
         System.out.println("Patching: " + apkFile.getAbsolutePath());
-        this.apkUtils = new ApkUtils();
-        apkUtils.decompile(apkFile);
 
-        List<File> f = apkUtils.getFileForExperiments();
         try {
-            enableExperiments(f.get(0));
+            whatToPatch();
+            enableExperiments();
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -147,14 +158,9 @@ public class Patcher {
 
     /**
      * Enable experiments by patching the method
-     * @param file the file containing the method to patch
      */
-    private void enableExperiments(File file) throws IOException, InterruptedException {
+    private void enableExperiments() throws IOException, InterruptedException {
         System.out.println("Enabling experiments...");
-        String classToPatch = findClassToPatch(file);
-
-        System.out.println("Class to patch: " + classToPatch);
-        System.out.println("Method to patch: " + methodToPatch);
 
         File fileToPatch = FileTextSearch.findSmaliFile(apkUtils.getOutDir(), classToPatch + ".smali").get(0);
 
