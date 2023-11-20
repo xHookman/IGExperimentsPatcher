@@ -23,11 +23,15 @@ public class Patcher {
     public void findWhatToPatch() throws IOException {
         apkUtils.decompile(apkFile);
         List<File> f = getFilesCallingExperiments();
-        this.whatToPatch =  experimentsUtils.findWhatToPatch(f.get(0));
+        try {
+            this.whatToPatch = experimentsUtils.findWhatToPatch(f.get(0));
+        } catch (Exception e) {
+            System.err.println("Error while finding what to patch: \n\n" + e.getMessage());
+        }
 
         System.out.println("Class to patch: X." + whatToPatch.getClassToPatch());
         System.out.println("Method to patch: " + whatToPatch.getMethodToPatch());
-        System.out.println("Argument type: X." + whatToPatch.getArgumentType());
+        System.out.println("Argument type: " + whatToPatch.getArgumentType());
     }
 
     /**

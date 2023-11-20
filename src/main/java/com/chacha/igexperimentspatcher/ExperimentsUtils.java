@@ -11,12 +11,14 @@ public class ExperimentsUtils {
      * @param fileCallingExperiments the files containing the method calling the method to enable experiments
      * @return the class name to patch
      */
-    public WhatToPatch findWhatToPatch(File fileCallingExperiments) {
+    public WhatToPatch findWhatToPatch(File fileCallingExperiments) throws Exception {
         boolean inMethod = false;
         WhatToPatch whatToPatch = new WhatToPatch();
         String mtdCallingMtdToPatch = getMtdCallingMtdToPatch(fileCallingExperiments);
 
-        Pattern pattern = Pattern.compile("invoke-static \\{[^}]+\\}, \\w+/(\\w+);->(\\w+)\\(\\w+/(\\w+);\\)Z"); // Regex to match the method call, invoke-static {p1}, LX/19o;->A00(LX/0pg;)Z
+        //invoke-static {p1}, LX/19o;->A00(LX/0pg;)Z
+        //invoke-static {p1}, LX/12U;->A00(Lcom/instagram/service/session/UserSession;)Z
+        Pattern pattern = Pattern.compile("invoke-static \\{[^}]+\\}, \\w+/(\\w+);->(\\w+)\\((L[^;]+);\\)Z"); // Regex to match the method call,
         Matcher matcher;
 
         try (BufferedReader reader = new BufferedReader(new FileReader(fileCallingExperiments))) {
@@ -28,9 +30,15 @@ public class ExperimentsUtils {
                     inMethod = true;
                 } else if (inMethod) {
                     matcher = pattern.matcher(line);
+
                     if (matcher.find()) {
-                        extractClassToPatch(matcher, whatToPatch);
+                        extractThingsToPatch(matcher, whatToPatch);
                         return whatToPatch;
+                    }
+
+                    if(line.trim().equals(".end method")) {
+                        // End of the method
+                        inMethod = false;
                     }
                 }
             }
@@ -38,14 +46,17 @@ public class ExperimentsUtils {
             throw new RuntimeException(e);
         }
 
-        return null;
+        throw new Exception("No method found for experiments");
     }
 
-    private void extractClassToPatch(Matcher matchedLine, WhatToPatch whatToPatch){
+    private void extractThingsToPatch(Matcher matchedLine, WhatToPatch whatToPatch){
         // Extract the class name from the matched group
         whatToPatch.setClassToPatch(matchedLine.group(1));
         whatToPatch.setMethodToPatch(matchedLine.group(2));
-        whatToPatch.setArgumentType(matchedLine.group(3));
+        String argumentType = matchedLine.group(3);
+        argumentType = argumentType.substring(1); // Remove the L
+        argumentType = argumentType.replace('/', '.');
+        whatToPatch.setArgumentType(argumentType);
     }
 
     /**
