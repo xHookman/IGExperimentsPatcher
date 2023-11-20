@@ -11,12 +11,12 @@ public class ExperimentsUtils {
      * @param fileCallingExperiments the files containing the method calling the method to enable experiments
      * @return the class name to patch
      */
-    public WhatToPatch findWhatToPatch(File fileCallingExperiments) throws IOException {
+    public WhatToPatch findWhatToPatch(File fileCallingExperiments) {
         boolean inMethod = false;
         WhatToPatch whatToPatch = new WhatToPatch();
         String mtdCallingMtdToPatch = getMtdCallingMtdToPatch(fileCallingExperiments);
 
-        Pattern pattern = Pattern.compile("invoke-static \\{[^}]+}, ([^;]+);->(\\w+)\\("); // Regex to match the method call
+        Pattern pattern = Pattern.compile("invoke-static \\{[^}]+\\}, \\w+/(\\w+);->(\\w+)\\(\\w+/(\\w+);\\)Z"); // Regex to match the method call, invoke-static {p1}, LX/19o;->A00(LX/0pg;)Z
         Matcher matcher;
 
         try (BufferedReader reader = new BufferedReader(new FileReader(fileCallingExperiments))) {
@@ -43,13 +43,9 @@ public class ExperimentsUtils {
 
     private void extractClassToPatch(Matcher matchedLine, WhatToPatch whatToPatch){
         // Extract the class name from the matched group
-
-        String classToPatch;
-        classToPatch = matchedLine.group(1);
-        classToPatch = classToPatch.substring(3);
-
-        whatToPatch.setClassToPatch(classToPatch);
+        whatToPatch.setClassToPatch(matchedLine.group(1));
         whatToPatch.setMethodToPatch(matchedLine.group(2));
+        whatToPatch.setArgumentType(matchedLine.group(3));
     }
 
     /**

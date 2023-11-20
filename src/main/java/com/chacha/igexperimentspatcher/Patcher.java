@@ -25,8 +25,9 @@ public class Patcher {
         List<File> f = getFilesCallingExperiments();
         this.whatToPatch =  experimentsUtils.findWhatToPatch(f.get(0));
 
-        System.out.println("Class to patch: " + whatToPatch.getClassToPatch());
+        System.out.println("Class to patch: X." + whatToPatch.getClassToPatch());
         System.out.println("Method to patch: " + whatToPatch.getMethodToPatch());
+        System.out.println("Argument type: X." + whatToPatch.getArgumentType());
     }
 
     /**
