@@ -103,6 +103,4 @@ public class Patcher {
     public File getFileToRecompile(){
         return smaliToRecompile;
     }
-
-
 }

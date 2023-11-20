@@ -85,7 +85,7 @@ public class ExperimentsUtils {
                         inMethod = false;
                         // Check if the method contains the search text
                         if (methodContent.toString().contains("is_employee")) {
-                            System.out.println("Found method calling the method to enable experiments: " + method + "\n");
+                            System.out.println("\nFound method calling the method to enable experiments");
                             return method;
                         }
                     }
