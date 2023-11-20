@@ -35,7 +35,7 @@ public static void main(String[] args) throws BrutException, IOException {
         Patcher patcher = new Patcher(new File(path));
 
         if(forXposed)
-            patcher.whatToPatch();
+            patcher.findWhatToPatch();
         else
             patcher.patch();
         }

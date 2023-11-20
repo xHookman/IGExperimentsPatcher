@@ -10,8 +10,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class FileTextSearch {
 
@@ -115,11 +113,10 @@ public class FileTextSearch {
      * @return true if the file contains the text, false otherwise
      */
     private static boolean containsText(File file, String searchText) {
+
         try {
             String content = Files.readString(file.toPath(), StandardCharsets.UTF_8);
-            String regex = "(?i).*" + Pattern.quote(searchText) + ".*";
-            Matcher matcher = Pattern.compile(regex).matcher(content);
-            return matcher.find();
+            return content.contains(searchText);
         } catch (IOException e) {
             e.printStackTrace();
             return false;

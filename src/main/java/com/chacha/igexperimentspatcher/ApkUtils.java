@@ -12,7 +12,6 @@ import net.lingala.zip4j.model.ZipParameters;
 import net.lingala.zip4j.model.enums.CompressionMethod;
 import java.io.*;
 import java.nio.file.Files;
-import java.util.List;
 
 public class ApkUtils {
     private File out;
@@ -36,17 +35,6 @@ public class ApkUtils {
         }
     }
 
-    /**
-     * @return the file containing the call to the method that enable experiments
-     */
-    public List<File> getFileForExperiments(){
-        System.out.println("Searching for experiments file...");
-        try {
-           return FileTextSearch.searchFilesWithTextInDirectories(out, "const-string v0, \"is_employee\"");
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-     }
 
      /**
       * @return the out directory where the apk was decompiled
