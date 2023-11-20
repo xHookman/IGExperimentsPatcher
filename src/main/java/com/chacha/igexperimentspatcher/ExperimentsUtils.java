@@ -18,7 +18,7 @@ public class ExperimentsUtils {
 
         //invoke-static {p1}, LX/19o;->A00(LX/0pg;)Z
         //invoke-static {p1}, LX/12U;->A00(Lcom/instagram/service/session/UserSession;)Z
-        Pattern pattern = Pattern.compile("invoke-static \\{[^}]+\\}, \\w+/(\\w+);->(\\w+)\\((L[^;]+);\\)Z"); // Regex to match the method call,
+        Pattern pattern = Pattern.compile("invoke-static \\{[^}]+\\}, L(\\w+/\\w+);->(\\w+)\\((L[^;]+);\\)Z"); // Regex to match the method call,
         Matcher matcher;
 
         try (BufferedReader reader = new BufferedReader(new FileReader(fileCallingExperiments))) {
@@ -51,7 +51,7 @@ public class ExperimentsUtils {
 
     private void extractThingsToPatch(Matcher matchedLine, WhatToPatch whatToPatch){
         // Extract the class name from the matched group
-        whatToPatch.setClassToPatch(matchedLine.group(1));
+        whatToPatch.setClassToPatch(matchedLine.group(1).replace('/', '.'));
         whatToPatch.setMethodToPatch(matchedLine.group(2));
         String argumentType = matchedLine.group(3);
         argumentType = argumentType.substring(1); // Remove the L

@@ -30,6 +30,7 @@ public class ApkUtils {
         ApkDecoder decoder = new ApkDecoder(Config.getDefaultConfig(), apk);
         try {
             decoder.decode(out);
+
         } catch (AndrolibException | IOException | DirectoryException e) {
             throw new RuntimeException(e);
         }
