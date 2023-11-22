@@ -15,7 +15,7 @@ public class ExperimentsUtils {
         boolean inMethod = false;
         WhatToPatch whatToPatch = new WhatToPatch();
         String mtdCallingMtdToPatch = getMtdCallingMtdToPatch(fileCallingExperiments);
-
+        System.out.println("Searching call of method enabling dev options in " + fileCallingExperiments.getName() + "...");
         //invoke-static {p1}, LX/19o;->A00(LX/0pg;)Z
         //invoke-static {p1}, LX/12U;->A00(Lcom/instagram/service/session/UserSession;)Z
         Pattern pattern = Pattern.compile("invoke-static \\{[^}]+\\}, L(\\w+/\\w+);->(\\w+)\\((L[^;]+);\\)Z"); // Regex to match the method call,

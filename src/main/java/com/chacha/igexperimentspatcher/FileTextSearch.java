@@ -12,17 +12,26 @@ public class FileTextSearch {
     public static List<File> searchFilesWithText(File directory, String searchText) {
         List<File> result = new ArrayList<>();
 
-        File[] files = directory.listFiles();
+            File[] files = directory.listFiles();
+            if (Thread.interrupted()) {
+                System.out.println("Stopping file search in " + directory.getParentFile().getName());
+                return result;
+            }
 
-        if (files != null) {
-            for (File file : files) {
-                if (file.isDirectory() && file.getName().equals("X")) {
-                    result.addAll(searchFilesWithText(file, searchText));
-                } else if (file.isFile() && containsText(file, searchText)) {
-                    result.add(file);
+            if (files != null) {
+                for (File file : files) {
+                    if (Thread.interrupted()) {
+                        System.out.println("Stopping file search in " + directory.getParentFile().getName());
+                        return result;
+                    }
+
+                    if (file.isDirectory() && file.getName().equals("X")) {
+                        result.addAll(searchFilesWithText(file, searchText));
+                    } else if (file.isFile() && containsText(file, searchText)) {
+                        result.add(file);
+                    }
                 }
             }
-        }
 
         return result;
     }
@@ -30,13 +39,12 @@ public class FileTextSearch {
     private static boolean containsText(File file, String searchText) {
         try {
             String content = Files.readString(file.toPath(), StandardCharsets.UTF_8);
-            System.out.print("\rSearching in file: " + file.getPath());
             return content.contains(searchText);
         } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
-    }
+    }//
 
     public static File findSmaliFile(WhatToPatch whatToPatch, ApkUtils apkUtils) throws RuntimeException {
         String path = whatToPatch.getClassToPatch().replace(".", File.separator) + ".smali";

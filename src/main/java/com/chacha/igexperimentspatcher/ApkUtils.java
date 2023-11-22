@@ -27,40 +27,53 @@ import org.jf.dexlib2.writer.builder.DexBuilder;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.util.Arrays;
 
 public class ApkUtils {
     private File out;
+    private File apkFile;
+
+    public ApkUtils(File apkFile){
+        this.apkFile = apkFile;
+    }
 
     /**
      * Decompile an apk file
-     * @param apkFile the apk file to decompile
      */
-    public void decompile(File apkFile) throws IOException, AndrolibException {
+    public void extractDexFiles() throws IOException, AndrolibException {
         out = new File(apkFile.getName() + ".out");
         if(out.exists()) {
-            System.out.println("decompiled folder already exists, skipping decompilation");
             return;
         }
 
         ZipFile zipFile = new ZipFile(apkFile);
         for(FileHeader fileHeader : zipFile.getFileHeaders()){
-            System.out.println(fileHeader.getFileName());
             if(fileHeader.getFileName().endsWith(".dex")){
+                System.out.println("Found dex file: " + fileHeader.getFileName());
                 zipFile.extractFile(fileHeader, out.getAbsolutePath());
             }
         }
     }
 
+    public File[] getDexFiles(){
+        return out.listFiles((dir, name) -> name.endsWith(".dex"));
+    }
 
-        /*ApkDecoder decoder = new ApkDecoder(Config.getDefaultConfig(), apk);
-        try {
-            decoder.decode(out);
+    public File[] getDecompiledDexFiles(){
+        return out.listFiles((dir, name) -> name.startsWith("classes") && dir.isDirectory());
+    }
+    public File decodeSmali(File dexFile) throws AndrolibException {
+        File decodedSmali = new File(getOutDir().getAbsolutePath() + File.separator + dexFile.getName().replace(".dex", ""));
 
-        } catch (AndrolibException | IOException | DirectoryException e) {
-            throw new RuntimeException(e);
-        }*/
+        if(decodedSmali.exists()) {
+            System.out.println("smali folder already exists, skipping decompilation");
+            return decodedSmali;
+        }
 
-
+        System.out.println("Decompiling " + dexFile.getName() + " to smali...");
+        SmaliDecoder.decode(apkFile, decodedSmali, dexFile.getName(), false, 0);
+        return decodedSmali;
+    }
 
      /**
       * @return the out directory where the apk was decompiled
