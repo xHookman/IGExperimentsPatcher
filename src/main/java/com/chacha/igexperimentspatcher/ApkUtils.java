@@ -1,33 +1,16 @@
 package com.chacha.igexperimentspatcher;
 
-import brut.androlib.ApkDecoder;
-import brut.androlib.Config;
 import brut.androlib.exceptions.AndrolibException;
 import brut.androlib.src.SmaliBuilder;
 import brut.androlib.src.SmaliDecoder;
 import brut.common.BrutException;
-import brut.directory.DirectoryException;
 import brut.directory.ExtFile;
-import com.android.tools.smali.dexlib2.DexFileFactory;
-import com.android.tools.smali.dexlib2.Opcodes;
-import com.android.tools.smali.dexlib2.analysis.InlineMethodResolver;
-import com.android.tools.smali.dexlib2.dexbacked.DexBackedDexFile;
-import com.android.tools.smali.dexlib2.dexbacked.DexBackedOdexFile;
-import com.android.tools.smali.dexlib2.iface.DexFile;
-import com.android.tools.smali.dexlib2.iface.MultiDexContainer;
-import jadx.core.utils.android.AndroidResourcesUtils;
 import net.lingala.zip4j.ZipFile;
-import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.model.FileHeader;
 import net.lingala.zip4j.model.ZipParameters;
 import net.lingala.zip4j.model.enums.CompressionMethod;
-import org.jf.baksmali.Baksmali;
-import org.jf.baksmali.BaksmaliOptions;
-import org.jf.dexlib2.writer.builder.DexBuilder;
-
 import java.io.*;
 import java.nio.file.Files;
-import java.util.Arrays;
 
 public class ApkUtils {
     private File out;
@@ -82,11 +65,6 @@ public class ApkUtils {
         * Compile a smali directory to dex
         */
      private void compileSmaliToDex(ExtFile smaliDir, File dexFile) throws BrutException {
-        /*if(dexFile.exists()) {
-            System.out.println("dex file already exists, skipping compilation");
-            return;
-        }*/
-
         System.out.println("Compiling " + smaliDir + " to dex...");
         SmaliBuilder.build(smaliDir, dexFile, 0);
      }

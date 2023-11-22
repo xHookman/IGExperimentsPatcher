@@ -1,13 +1,11 @@
 package com.chacha.igexperimentspatcher;
 
 import brut.androlib.exceptions.AndrolibException;
-import brut.androlib.src.SmaliDecoder;
 import brut.common.BrutException;
 import brut.directory.ExtFile;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -121,7 +119,7 @@ public class Patcher {
         File currentFile = file.getAbsoluteFile();
 
         // Iterate until we reach the root directory
-        while (!currentFile.getName().startsWith("smali")) {
+        while (!currentFile.getName().startsWith("classes")) {
             currentFile = currentFile.getParentFile();
         }
         smaliToRecompile = currentFile;

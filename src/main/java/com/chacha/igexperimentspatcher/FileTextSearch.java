@@ -5,8 +5,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.*;
-
 public class FileTextSearch {
 
     public static List<File> searchFilesWithText(File directory, String searchText) {
@@ -42,16 +40,18 @@ public class FileTextSearch {
         }
     }//
 
+
+
     public static File findSmaliFile(WhatToPatch whatToPatch, ApkUtils apkUtils) throws RuntimeException {
         String path = whatToPatch.getClassToPatch().replace(".", File.separator) + ".smali";
         File fileToPatch = null;
-        File[] smaliFolders = apkUtils.getOutDir().listFiles((dir, name) -> name.startsWith("smali"));
+        File[] classesFolders = apkUtils.getOutDir().listFiles((dir, name) -> name.startsWith("classes") && !name.endsWith(".dex"));
 
-        if(smaliFolders == null){
+        if(classesFolders == null){
             throw new RuntimeException("No smali folder not found in " + apkUtils.getOutDir().getAbsolutePath());
         }
 
-        for(File file : smaliFolders){
+        for(File file : classesFolders){
             if(new File(file.getAbsolutePath() + File.separator + path).exists()){
                 fileToPatch = new File(file.getAbsolutePath() + File.separator + path);
                 break;
