@@ -1,6 +1,7 @@
 package com.chacha.igexperimentspatcher;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.ArrayList;
@@ -38,30 +39,40 @@ public class FileTextSearch {
             e.printStackTrace();
             return false;
         }
-    }//
+    }
 
-
-
-    public static File findSmaliFile(WhatToPatch whatToPatch, ApkUtils apkUtils) throws RuntimeException {
-        String path = whatToPatch.getClassToPatch().replace(".", File.separator) + ".smali";
-        File fileToPatch = null;
-        File[] classesFolders = apkUtils.getOutDir().listFiles((dir, name) -> name.startsWith(ApkUtils.DEX_BASE_NAME) && !name.endsWith(".dex"));
-
-        if(classesFolders == null){
-            throw new RuntimeException("No smali folder not found in " + apkUtils.getOutDir().getAbsolutePath());
-        }
-
-        for(File file : classesFolders){
-            if(new File(file.getAbsolutePath() + File.separator + path).exists()){
-                fileToPatch = new File(file.getAbsolutePath() + File.separator + path);
-                break;
+    //HAHAHA HELP windows is so trash the name is case insensitive so for example 19M.smali is same as 19m.smali :))))
+    public static File similarFileExists(String targetFileName, File directory) {
+        if (directory.exists() && directory.isDirectory()) {
+            File[] files = directory.listFiles();
+            if (files != null) {
+                for (File f : files) {
+                    if (f.getName().startsWith(targetFileName)) {
+                        return f;
+                    }
+                }
             }
         }
 
-        if(fileToPatch == null){
-            throw new RuntimeException("File to patch not found");
+        return null;
+    }
+    public static File findSmaliFile(WhatToPatch whatToPatch, ApkUtils apkUtils) throws FileNotFoundException {
+        String path = whatToPatch.getClassToPatch();
+        File[] classesFolders = apkUtils.getOutDir().listFiles((dir, name) -> name.startsWith(ApkUtils.DEX_BASE_NAME) && !name.endsWith(".dex"));
+
+        if(classesFolders == null){
+            throw new RuntimeException("No classes folder not found in " + apkUtils.getOutDir().getAbsolutePath());
         }
 
-        return fileToPatch;
+        for(File folder : classesFolders){
+            File folderToSearchIn = new File(folder + File.separator + path.substring(0, path.lastIndexOf(".")));
+            String fileNameToSearch = path.substring(path.lastIndexOf(".") + 1);
+            File fileToPatch = similarFileExists(fileNameToSearch, folderToSearchIn);
+            if(fileToPatch.exists()){
+                return fileToPatch;
+            }
+        }
+
+        throw new FileNotFoundException("Smali file to patch not found!");
     }
 }
