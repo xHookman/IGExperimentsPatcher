@@ -33,13 +33,13 @@ public class Patcher {
         apkUtils.extractDexFiles();
         ExecutorService executor = Executors.newFixedThreadPool(apkUtils.getDexFiles().length);
 
-        for(File smaliClass : apkUtils.getDecompiledDexFiles()){
+        for(File smaliClass : apkUtils.getDexFiles()){
             Future<?> future = executor.submit(() -> {
                 File decodedSmali;
 
                 try {
                     decodedSmali = apkUtils.decodeSmali(smaliClass);
-                    System.out.println("\nDecompiled " + smaliClass.getName());
+                    System.out.println("Decompiled " + smaliClass.getName());
                 } catch (AndrolibException ex) {
                     throw new RuntimeException(ex);
                 }
@@ -49,14 +49,10 @@ public class Patcher {
                     System.err.println("\nNo file calling experiments found in " + decodedSmali.getPath());
                 } else {
                     try {
+                        executor.shutdownNow();
                         this.whatToPatch = experimentsUtils.findWhatToPatch(f.get(0));
-                        System.out.println("Class to patch: " + whatToPatch.getClassToPatch());
-                        System.out.println("Method to patch: " + whatToPatch.getMethodToPatch());
-                        System.out.println("Argument type: " + whatToPatch.getArgumentType());
                     } catch (Exception e) {
                         System.err.println("\nError while finding what to patch: \n\n" + e.getMessage());
-                    } finally {
-                        executor.shutdownNow();
                     }
                 }
             });
@@ -71,6 +67,10 @@ public class Patcher {
                 e.printStackTrace(); // Handle exceptions as needed
             }
         }
+
+        System.out.println("Class to patch: " + whatToPatch.getClassToPatch());
+        System.out.println("Method to patch: " + whatToPatch.getMethodToPatch());
+        System.out.println("Argument type: " + whatToPatch.getArgumentType());
 
         executor.shutdown(); // Shutdown the executor when done
     }

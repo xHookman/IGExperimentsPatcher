@@ -40,7 +40,7 @@ public class ApkUtils {
     /**
      * Decompile an apk file
      */
-    public void extractDexFiles() throws IOException, AndrolibException {
+    public void extractDexFiles() throws IOException {
         out = new File(apkFile.getName() + ".out");
         if(out.exists()) {
             return;
@@ -49,7 +49,6 @@ public class ApkUtils {
         ZipFile zipFile = new ZipFile(apkFile);
         for(FileHeader fileHeader : zipFile.getFileHeaders()){
             if(fileHeader.getFileName().endsWith(".dex")){
-                System.out.println("Found dex file: " + fileHeader.getFileName());
                 zipFile.extractFile(fileHeader, out.getAbsolutePath());
             }
         }
@@ -59,9 +58,6 @@ public class ApkUtils {
         return out.listFiles((dir, name) -> name.endsWith(".dex"));
     }
 
-    public File[] getDecompiledDexFiles(){
-        return out.listFiles((dir, name) -> name.startsWith("classes") && dir.isDirectory());
-    }
     public File decodeSmali(File dexFile) throws AndrolibException {
         File decodedSmali = new File(getOutDir().getAbsolutePath() + File.separator + dexFile.getName().replace(".dex", ""));
 

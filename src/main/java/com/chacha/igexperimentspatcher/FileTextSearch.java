@@ -12,26 +12,22 @@ public class FileTextSearch {
     public static List<File> searchFilesWithText(File directory, String searchText) {
         List<File> result = new ArrayList<>();
 
-            File[] files = directory.listFiles();
-            if (Thread.interrupted()) {
-                System.out.println("Stopping file search in " + directory.getParentFile().getName());
-                return result;
-            }
+        File[] files = directory.listFiles();
 
-            if (files != null) {
-                for (File file : files) {
-                    if (Thread.interrupted()) {
-                        System.out.println("Stopping file search in " + directory.getParentFile().getName());
-                        return result;
-                    }
+        if (files != null) {
+            for (File file : files) {
+                if (Thread.interrupted()) {
+                    //System.out.println("Stopping file search in " + directory.getParentFile().getName());
+                    return result;
+                }
 
-                    if (file.isDirectory() && file.getName().equals("X")) {
-                        result.addAll(searchFilesWithText(file, searchText));
-                    } else if (file.isFile() && containsText(file, searchText)) {
-                        result.add(file);
-                    }
+                if (file.isDirectory() && file.getName().equals("X")) {
+                    result.addAll(searchFilesWithText(file, searchText));
+                } else if (file.isFile() && containsText(file, searchText)) {
+                    result.add(file);
                 }
             }
+        }
 
         return result;
     }
