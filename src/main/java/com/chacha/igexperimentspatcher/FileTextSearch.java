@@ -64,6 +64,11 @@ public class FileTextSearch {
             throw new RuntimeException("No classes folder not found in " + apkUtils.getOutDir().getAbsolutePath());
         }
 
+        /*
+         * I could use exists() method from File class but on Windows the name is case insensitive
+         * Sometimes the class name to patch can be for example 19m.1.smali, a 19M.smali file exists too and on Windows it will use 19M.smali file for sure :D
+         */
+
         for(File folder : classesFolders){
             File folderToSearchIn = new File(folder + File.separator + path.substring(0, path.lastIndexOf(".")));
             String fileNameToSearch = path.substring(path.lastIndexOf(".") + 1);
