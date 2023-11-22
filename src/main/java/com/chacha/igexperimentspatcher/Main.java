@@ -42,6 +42,5 @@ public class Main {
     private static void showUsageError(){
         System.out.println("No arguments provided. Usage: java -jar IGExperimentsPatcher.jar -p <path to apk>");
         System.out.println("Use -x if you only need the class and method to patch (for xposed module).");
-        System.out.println("Use -s to sign the apk (need uber-apk-signer jar in the same folder).");
     }
 }
