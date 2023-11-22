@@ -94,7 +94,7 @@ public class Patcher {
      * @return the file containing the call to the method that enable experiments
      */
     public List<File> getFilesCallingDevOptions(File folderToSearchIn) {
-        System.out.println("Searching for dev options calls in " + folderToSearchIn.getName() + "...");
+        System.out.println("Searching for call to method enabling dev options in " + folderToSearchIn.getName() + "...");
         return FileTextSearch.searchFilesWithText(folderToSearchIn, "const-string v0, \"is_employee\"");
     }
 
