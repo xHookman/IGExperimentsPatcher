@@ -45,7 +45,7 @@ public class FileTextSearch {
     public static File findSmaliFile(WhatToPatch whatToPatch, ApkUtils apkUtils) throws RuntimeException {
         String path = whatToPatch.getClassToPatch().replace(".", File.separator) + ".smali";
         File fileToPatch = null;
-        File[] classesFolders = apkUtils.getOutDir().listFiles((dir, name) -> name.startsWith("classes") && !name.endsWith(".dex"));
+        File[] classesFolders = apkUtils.getOutDir().listFiles((dir, name) -> name.startsWith(ApkUtils.DEX_BASE_NAME) && !name.endsWith(".dex"));
 
         if(classesFolders == null){
             throw new RuntimeException("No smali folder not found in " + apkUtils.getOutDir().getAbsolutePath());

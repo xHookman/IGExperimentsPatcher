@@ -14,7 +14,9 @@ import java.nio.file.Files;
 
 public class ApkUtils {
     private File out;
-    private File apkFile;
+    private final File apkFile;
+
+    public static final String DEX_BASE_NAME = "classes";
 
     public ApkUtils(File apkFile){
         this.apkFile = apkFile;
@@ -72,18 +74,11 @@ public class ApkUtils {
     /**
      * Compile a smali directory to dex and copy it to the apk
      * @param apkFile the apk to copy the dex file to
-     * @param smaliFile the smali directory to compile
+     * @param smaliDir the classes directory to compile
      */
-     public void compileToApk(File apkFile, ExtFile smaliFile) throws BrutException {
-        Integer classesDexCount = Integer.getInteger(smaliFile.getName());
-         String fileName;
-        if(classesDexCount != null)
-            fileName = "classes" + classesDexCount + ".dex";
-        else
-            fileName = "classes.dex";
-
-        File dexFile = new File(fileName);
-         compileSmaliToDex(smaliFile, dexFile);
+     public void compileToApk(File apkFile, ExtFile smaliDir) throws BrutException {
+        File dexFile = new File(smaliDir + ".dex");
+         compileSmaliToDex(smaliDir, dexFile);
          try {
              copyCompiledFileToApk(apkFile, dexFile);
          } catch (IOException e) {

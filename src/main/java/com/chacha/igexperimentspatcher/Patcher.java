@@ -41,9 +41,9 @@ public class Patcher {
                     throw new RuntimeException(ex);
                 }
 
-                List<File> f = getFilesCallingExperiments(decodedSmali);
+                List<File> f = getFilesCallingDevOptions(decodedSmali);
                 if (f.isEmpty()) {
-                    System.err.println("\nNo file calling experiments found in " + decodedSmali.getName());
+                    System.err.println("\nNo file calling method to enable dev options found in " + decodedSmali.getName());
                 } else {
                     try {
                         executor.shutdownNow();
@@ -80,19 +80,21 @@ public class Patcher {
 
         try {
             findWhatToPatch();
-            enableExperiments(apkUtils);
+            enableDevOptions(apkUtils);
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
 
         apkUtils.compileToApk(apkFile, new ExtFile(getFileToRecompile()));
+        System.out.println("Patched successfully !!!!");
+        System.out.println("\nYou can use Uber Apk Signer if you want to sign easily your patched apk (https://github.com/patrickfav/uber-apk-signer/releases)");
     }
 
     /**
      * @return the file containing the call to the method that enable experiments
      */
-    public List<File> getFilesCallingExperiments(File folderToSearchIn) {
-        System.out.println("Searching for experiments file in " + folderToSearchIn.getName() + "...");
+    public List<File> getFilesCallingDevOptions(File folderToSearchIn) {
+        System.out.println("Searching for dev options calls in " + folderToSearchIn.getName() + "...");
         return FileTextSearch.searchFilesWithText(folderToSearchIn, "const-string v0, \"is_employee\"");
     }
 
@@ -100,13 +102,13 @@ public class Patcher {
     /**
      * Enable experiments by patching the method
      */
-    private void enableExperiments(ApkUtils apkUtils) throws IOException, InterruptedException {
-        System.out.println("Enabling experiments...");
+    private void enableDevOptions(ApkUtils apkUtils) throws IOException, InterruptedException {
+        System.out.println("Enabling dev options...");
         File fileToPatch = FileTextSearch.findSmaliFile(whatToPatch, apkUtils);
         System.out.println("File to patch: " + fileToPatch.getAbsolutePath());
         setPkgToRecompile(fileToPatch);
         experimentsUtils.makeMethodReturnTrue(fileToPatch, whatToPatch.getMethodToPatch());
-        System.out.println("Experiments enabled successfully.");
+        System.out.println("Dev options enabled successfully.");
     }
 
 
@@ -118,7 +120,7 @@ public class Patcher {
         File currentFile = file.getAbsoluteFile();
 
         // Iterate until we reach the root directory
-        while (!currentFile.getName().startsWith("classes")) {
+        while (!currentFile.getName().startsWith(ApkUtils.DEX_BASE_NAME)) {
             currentFile = currentFile.getParentFile();
         }
         smaliToRecompile = currentFile;
