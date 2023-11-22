@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'com.chacha.igexperimentspatcher'
-version '1.1-SNAPSHOT'
+version '1.2'
 
 repositories {
     mavenCentral()
@@ -15,8 +15,6 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
     implementation 'io.github.skylot:jadx-core:1.4.7'
     implementation group: 'io.github.skylot', name: 'jadx-java-convert', version: '1.4.7'
-    compileOnly files('libs/baksmali-2.5.2.jar')
-    compileOnly files('libs/smali-2.5.2.jar')
     compileOnly files('libs/apktool_2.8.1.jar')
     implementation group: 'net.lingala.zip4j', name: 'zip4j', version: '2.11.5'
 }

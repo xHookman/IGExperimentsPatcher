@@ -6,7 +6,7 @@ import java.io.File;
 import java.io.IOException;
 
 public class Main {
-public static void main(String[] args) throws BrutException, IOException {
+    public static void main(String[] args) throws BrutException, IOException {
         System.out.println("Hello world!");
         if(args.length == 0) {
             showUsageError();
@@ -38,9 +38,10 @@ public static void main(String[] args) throws BrutException, IOException {
             patcher.findWhatToPatch();
         else
             patcher.patch();
-        }
-
-        private static void showUsageError(){
-            System.out.println("No arguments provided. Usage: java -jar IGExperimentsPatcher.jar -p <path to apk>\nUse -x if you only need the class and method to patch (for xposed module).");
-        }
+    }
+    private static void showUsageError(){
+        System.out.println("No arguments provided. Usage: java -jar IGExperimentsPatcher.jar -p <path to apk>");
+        System.out.println("Use -x if you only need the class and method to patch (for xposed module).");
+        System.out.println("Use -s to sign the apk (need uber-apk-signer jar in the same folder).");
+    }
 }
