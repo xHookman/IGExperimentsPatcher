@@ -4,12 +4,27 @@ import brut.androlib.ApkDecoder;
 import brut.androlib.Config;
 import brut.androlib.exceptions.AndrolibException;
 import brut.androlib.src.SmaliBuilder;
+import brut.androlib.src.SmaliDecoder;
 import brut.common.BrutException;
 import brut.directory.DirectoryException;
 import brut.directory.ExtFile;
+import com.android.tools.smali.dexlib2.DexFileFactory;
+import com.android.tools.smali.dexlib2.Opcodes;
+import com.android.tools.smali.dexlib2.analysis.InlineMethodResolver;
+import com.android.tools.smali.dexlib2.dexbacked.DexBackedDexFile;
+import com.android.tools.smali.dexlib2.dexbacked.DexBackedOdexFile;
+import com.android.tools.smali.dexlib2.iface.DexFile;
+import com.android.tools.smali.dexlib2.iface.MultiDexContainer;
+import jadx.core.utils.android.AndroidResourcesUtils;
 import net.lingala.zip4j.ZipFile;
+import net.lingala.zip4j.exception.ZipException;
+import net.lingala.zip4j.model.FileHeader;
 import net.lingala.zip4j.model.ZipParameters;
 import net.lingala.zip4j.model.enums.CompressionMethod;
+import org.jf.baksmali.Baksmali;
+import org.jf.baksmali.BaksmaliOptions;
+import org.jf.dexlib2.writer.builder.DexBuilder;
+
 import java.io.*;
 import java.nio.file.Files;
 
@@ -20,21 +35,31 @@ public class ApkUtils {
      * Decompile an apk file
      * @param apkFile the apk file to decompile
      */
-    public void decompile(File apkFile) {
-        ExtFile apk = new ExtFile(apkFile);
-        out = new File(apk.getName() + ".out");
+    public void decompile(File apkFile) throws IOException, AndrolibException {
+        out = new File(apkFile.getName() + ".out");
         if(out.exists()) {
             System.out.println("decompiled folder already exists, skipping decompilation");
             return;
         }
-        ApkDecoder decoder = new ApkDecoder(Config.getDefaultConfig(), apk);
+
+        ZipFile zipFile = new ZipFile(apkFile);
+        for(FileHeader fileHeader : zipFile.getFileHeaders()){
+            System.out.println(fileHeader.getFileName());
+            if(fileHeader.getFileName().endsWith(".dex")){
+                zipFile.extractFile(fileHeader, out.getAbsolutePath());
+            }
+        }
+    }
+
+
+        /*ApkDecoder decoder = new ApkDecoder(Config.getDefaultConfig(), apk);
         try {
             decoder.decode(out);
 
         } catch (AndrolibException | IOException | DirectoryException e) {
             throw new RuntimeException(e);
-        }
-    }
+        }*/
+
 
 
      /**

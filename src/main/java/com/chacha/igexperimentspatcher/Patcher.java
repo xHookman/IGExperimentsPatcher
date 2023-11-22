@@ -1,5 +1,7 @@
 package com.chacha.igexperimentspatcher;
 
+import brut.androlib.exceptions.AndrolibException;
+import brut.androlib.src.SmaliDecoder;
 import brut.common.BrutException;
 import brut.directory.ExtFile;
 import java.io.*;
@@ -21,8 +23,32 @@ public class Patcher {
      * Find the class and method to patch
      */
     public void findWhatToPatch() throws IOException {
-        apkUtils.decompile(apkFile);
-        List<File> f = getFilesCallingExperiments();
+        try {
+            apkUtils.decompile(apkFile);
+            for(File smaliClass : apkUtils.getOutDir().listFiles()){
+                File decodedSmali = new File(apkUtils.getOutDir().getAbsolutePath() + File.separator + smaliClass.getName());
+                SmaliDecoder.decode(apkFile, decodedSmali, smaliClass.getName(), false, 0);
+                List<File> f = getFilesCallingExperiments(decodedSmali);
+                if (f.isEmpty()) {
+                    System.err.println("No file calling experiments found.");
+                } else {
+                    try {
+                        this.whatToPatch = experimentsUtils.findWhatToPatch(f.get(0));
+                    } catch (Exception e) {
+                        System.err.println("Error while finding what to patch: \n\n" + e.getMessage());
+                    }
+
+                    System.out.println("Class to patch: " + whatToPatch.getClassToPatch());
+                    System.out.println("Method to patch: " + whatToPatch.getMethodToPatch());
+                    System.out.println("Argument type: " + whatToPatch.getArgumentType());
+                }
+
+                System.out.println("Decompiled " + smaliClass.getName());
+            }
+        } catch (AndrolibException e) {
+            throw new RuntimeException(e);
+        }
+        /*List<File> f = getFilesCallingExperiments();
         if (f.isEmpty()) {
             System.err.println("No file calling experiments found.");
             return;
@@ -36,7 +62,7 @@ public class Patcher {
 
         System.out.println("Class to patch: " + whatToPatch.getClassToPatch());
         System.out.println("Method to patch: " + whatToPatch.getMethodToPatch());
-        System.out.println("Argument type: " + whatToPatch.getArgumentType());
+        System.out.println("Argument type: " + whatToPatch.getArgumentType());*/
     }
 
     /**
@@ -58,13 +84,9 @@ public class Patcher {
     /**
      * @return the file containing the call to the method that enable experiments
      */
-    public List<File> getFilesCallingExperiments(){
+    public List<File> getFilesCallingExperiments(File folderToSearchIn){
         System.out.println("Searching for experiments file...");
-        try {
-            return FileTextSearch.searchFilesWithTextInDirectories(apkUtils.getOutDir(), "const-string v0, \"is_employee\"");
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        return FileTextSearch.searchFilesWithText(folderToSearchIn, "const-string v0, \"is_employee\"");
     }
 
 
