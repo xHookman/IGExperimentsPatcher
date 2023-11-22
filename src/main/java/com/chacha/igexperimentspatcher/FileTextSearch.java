@@ -71,37 +71,27 @@ public class FileTextSearch {
         }
     }
 
-    public static List<File> findSmaliFile(File root, String fileToSearch) throws InterruptedException {
-        List<File> result = new ArrayList<>();
+    public static File findSmaliFile(WhatToPatch whatToPatch, ApkUtils apkUtils) throws RuntimeException {
+        String path = whatToPatch.getClassToPatch().replace(".", File.separator) + ".smali";
+        File fileToPatch = null;
+        File[] smaliFolders = apkUtils.getOutDir().listFiles((dir, name) -> name.startsWith("smali"));
 
-        if (root.isDirectory()) {
-            File[] directories = root.listFiles((file, name) -> name.startsWith("smali") && new File(file, name).isDirectory());
+        if(smaliFolders == null){
+            throw new RuntimeException("No smali folder not found in " + apkUtils.getOutDir().getAbsolutePath());
+        }
 
-            if (directories != null) {
-                ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-
-                List<Callable<List<File>>> tasks = new ArrayList<>();
-
-                for (File directory : directories) {
-                    tasks.add(() -> searchInFolder(directory, fileToSearch));
-                }
-
-                try {
-                    List<Future<List<File>>> futures = executor.invokeAll(tasks);
-
-                    for (Future<List<File>> future : futures) {
-                        result.addAll(future.get());
-                    }
-
-                } catch (InterruptedException | ExecutionException e) {
-                    e.printStackTrace();
-                } finally {
-                    executor.shutdown();
-                }
+        for(File file : smaliFolders){
+            if(new File(file.getAbsolutePath() + File.separator + path).exists()){
+                fileToPatch = new File(file.getAbsolutePath() + File.separator + path);
+                break;
             }
         }
 
-        return result;
+        if(fileToPatch == null){
+            throw new RuntimeException("File to patch not found");
+        }
+
+        return fileToPatch;
     }
 
     private static List<File> searchInFolder(File folder, String fileName) {

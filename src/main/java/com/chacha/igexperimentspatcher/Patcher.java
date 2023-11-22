@@ -73,9 +73,7 @@ public class Patcher {
      */
     private void enableExperiments(ApkUtils apkUtils) throws IOException, InterruptedException {
         System.out.println("Enabling experiments...");
-
-        File fileToPatch = FileTextSearch.findSmaliFile(apkUtils.getOutDir(), whatToPatch.getClassToPatch() + ".smali").get(0);
-
+        File fileToPatch = FileTextSearch.findSmaliFile(whatToPatch, apkUtils);
         System.out.println("File to patch: " + fileToPatch.getAbsolutePath());
         setPkgToRecompile(fileToPatch);
         experimentsUtils.makeMethodReturnTrue(fileToPatch, whatToPatch.getMethodToPatch());
