@@ -1,41 +1,62 @@
 package com.chacha.igexperimentspatcher;
 
-import brut.androlib.ApkDecoder;
-import brut.androlib.Config;
 import brut.androlib.exceptions.AndrolibException;
 import brut.androlib.src.SmaliBuilder;
+import brut.androlib.src.SmaliDecoder;
 import brut.common.BrutException;
-import brut.directory.DirectoryException;
 import brut.directory.ExtFile;
 import net.lingala.zip4j.ZipFile;
+import net.lingala.zip4j.model.FileHeader;
 import net.lingala.zip4j.model.ZipParameters;
 import net.lingala.zip4j.model.enums.CompressionMethod;
 import java.io.*;
 import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class ApkUtils {
     private File out;
+    private final File apkFile;
+
+    public static final String DEX_BASE_NAME = "classes";
+
+    public ApkUtils(File apkFile){
+        this.apkFile = apkFile;
+    }
 
     /**
      * Decompile an apk file
-     * @param apkFile the apk file to decompile
      */
-    public void decompile(File apkFile) {
-        ExtFile apk = new ExtFile(apkFile);
-        out = new File(apk.getName() + ".out");
+    public void extractDexFiles() throws IOException {
+        out = new File(apkFile.getName() + ".out");
         if(out.exists()) {
-            System.out.println("decompiled folder already exists, skipping decompilation");
             return;
         }
-        ApkDecoder decoder = new ApkDecoder(Config.getDefaultConfig(), apk);
-        try {
-            decoder.decode(out);
 
-        } catch (AndrolibException | IOException | DirectoryException e) {
-            throw new RuntimeException(e);
+        ZipFile zipFile = new ZipFile(apkFile);
+        for(FileHeader fileHeader : zipFile.getFileHeaders()){
+            if(fileHeader.getFileName().endsWith(".dex")){
+                zipFile.extractFile(fileHeader, out.getAbsolutePath());
+            }
         }
     }
 
+    public File[] getDexFiles(){
+        return out.listFiles((dir, name) -> name.endsWith(".dex"));
+    }
+
+    public File decodeSmali(File dexFile) throws AndrolibException {
+        File decodedSmali = new File(getOutDir().getAbsolutePath() + File.separator + dexFile.getName().replace(".dex", ""));
+
+        if(decodedSmali.exists()) {
+            System.out.println(decodedSmali.getName() + " already exists, skipping decompilation");
+            return decodedSmali;
+        }
+
+        System.out.println("Decompiling " + dexFile.getName() + " to smali...");
+        SmaliDecoder.decode(apkFile, decodedSmali, dexFile.getName(), false, 0);
+        return decodedSmali;
+    }
 
      /**
       * @return the out directory where the apk was decompiled
@@ -48,11 +69,6 @@ public class ApkUtils {
         * Compile a smali directory to dex
         */
      private void compileSmaliToDex(ExtFile smaliDir, File dexFile) throws BrutException {
-        /*if(dexFile.exists()) {
-            System.out.println("dex file already exists, skipping compilation");
-            return;
-        }*/
-
         System.out.println("Compiling " + smaliDir + " to dex...");
         SmaliBuilder.build(smaliDir, dexFile, 0);
      }
@@ -60,18 +76,11 @@ public class ApkUtils {
     /**
      * Compile a smali directory to dex and copy it to the apk
      * @param apkFile the apk to copy the dex file to
-     * @param smaliFile the smali directory to compile
+     * @param smaliDir the classes directory to compile
      */
-     public void compileToApk(File apkFile, ExtFile smaliFile) throws BrutException {
-        Integer classesDexCount = Integer.getInteger(smaliFile.getName());
-         String fileName;
-        if(classesDexCount != null)
-            fileName = "classes" + classesDexCount + ".dex";
-        else
-            fileName = "classes.dex";
-
-        File dexFile = new File(fileName);
-         compileSmaliToDex(smaliFile, dexFile);
+     public void compileToApk(File apkFile, ExtFile smaliDir) throws BrutException {
+        File dexFile = new File(smaliDir + ".dex");
+         compileSmaliToDex(smaliDir, dexFile);
          try {
              copyCompiledFileToApk(apkFile, dexFile);
          } catch (IOException e) {

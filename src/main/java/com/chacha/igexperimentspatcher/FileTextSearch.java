@@ -1,54 +1,25 @@
 package com.chacha.igexperimentspatcher;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.*;
-
 public class FileTextSearch {
 
-    public static List<File> searchFilesWithTextInDirectories(File root, String searchText) throws InterruptedException {
-        List<File> result = new ArrayList<>();
-
-        if (root.isDirectory()) {
-            File[] directories = root.listFiles((file, name) -> name.startsWith("smali_") && new File(file, name).isDirectory());
-
-            if (directories != null) {
-                ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-
-                List<Callable<List<File>>> tasks = new ArrayList<>();
-
-                for (File directory : directories) {
-                    tasks.add(() -> searchFilesWithText(directory, searchText));
-                }
-
-                try {
-                    List<Future<List<File>>> futures = executor.invokeAll(tasks);
-
-                    for (Future<List<File>> future : futures) {
-                        result.addAll(future.get());
-                    }
-
-                } catch (InterruptedException | ExecutionException e) {
-                    e.printStackTrace();
-                } finally {
-                    executor.shutdown();
-                }
-            }
-        }
-
-        return result;
-    }
-
-    private static List<File> searchFilesWithText(File directory, String searchText) {
+    public static List<File> searchFilesWithText(File directory, String searchText) {
         List<File> result = new ArrayList<>();
 
         File[] files = directory.listFiles();
 
         if (files != null) {
             for (File file : files) {
+                if (Thread.interrupted()) {
+                    //System.out.println("Stopping file search in " + directory.getParentFile().getName());
+                    return result;
+                }
+
                 if (file.isDirectory() && file.getName().equals("X")) {
                     result.addAll(searchFilesWithText(file, searchText));
                 } else if (file.isFile() && containsText(file, searchText)) {
@@ -63,7 +34,6 @@ public class FileTextSearch {
     private static boolean containsText(File file, String searchText) {
         try {
             String content = Files.readString(file.toPath(), StandardCharsets.UTF_8);
-            System.out.print("\rSearching in file: " + file.getPath());
             return content.contains(searchText);
         } catch (Exception e) {
             e.printStackTrace();
@@ -71,54 +41,43 @@ public class FileTextSearch {
         }
     }
 
-    public static File findSmaliFile(WhatToPatch whatToPatch, ApkUtils apkUtils) throws RuntimeException {
-        String path = whatToPatch.getClassToPatch().replace(".", File.separator) + ".smali";
-        File fileToPatch = null;
-        File[] smaliFolders = apkUtils.getOutDir().listFiles((dir, name) -> name.startsWith("smali"));
-
-        if(smaliFolders == null){
-            throw new RuntimeException("No smali folder not found in " + apkUtils.getOutDir().getAbsolutePath());
-        }
-
-        for(File file : smaliFolders){
-            if(new File(file.getAbsolutePath() + File.separator + path).exists()){
-                fileToPatch = new File(file.getAbsolutePath() + File.separator + path);
-                break;
-            }
-        }
-
-        if(fileToPatch == null){
-            throw new RuntimeException("File to patch not found");
-        }
-
-        return fileToPatch;
-    }
-
-    private static List<File> searchInFolder(File folder, String fileName) {
-        fileName = getFileNameWithoutExtension(fileName);
-        List<File> result = new ArrayList<>();
-
-        File[] files = folder.listFiles();
-
-        if (files != null) {
-            for (File file : files) {
-                if (file.isDirectory() && file.getName().equals("X")) {
-                    result.addAll(searchInFolder(file, fileName));
-                } else if (file.isFile() && file.getName().startsWith(fileName)) {
-                    System.out.println("\u001B Found file: " + file.getPath());
-                    result.add(file);
+    //HAHAHA HELP windows is so trash the name is case insensitive so for example 19M.smali is same as 19m.smali :))))
+    public static File similarFileExists(String targetFileName, File directory) {
+        if (directory.exists() && directory.isDirectory()) {
+            File[] files = directory.listFiles();
+            if (files != null) {
+                for (File f : files) {
+                    if (f.getName().startsWith(targetFileName)) {
+                        return f;
+                    }
                 }
             }
         }
 
-        return result;
+        return null;
     }
+    public static File findSmaliFile(WhatToPatch whatToPatch, ApkUtils apkUtils) throws FileNotFoundException {
+        String path = whatToPatch.getClassToPatch();
+        File[] classesFolders = apkUtils.getOutDir().listFiles((dir, name) -> name.startsWith(ApkUtils.DEX_BASE_NAME) && !name.endsWith(".dex"));
 
-    private static String getFileNameWithoutExtension(String fileName) {
-        int index = fileName.lastIndexOf('.');
-        if (index == -1) {
-            return fileName;
+        if(classesFolders == null){
+            throw new RuntimeException("No classes folder not found in " + apkUtils.getOutDir().getAbsolutePath());
         }
-        return fileName.substring(0, index);
+
+        /*
+         * I could use exists() method from File class but on Windows the name is case insensitive
+         * Sometimes the class name to patch can be for example 19m.1.smali, a 19M.smali file exists too and on Windows it will use 19M.smali file for sure :D
+         */
+
+        for(File folder : classesFolders){
+            File folderToSearchIn = new File(folder + File.separator + path.substring(0, path.lastIndexOf(".")));
+            String fileNameToSearch = path.substring(path.lastIndexOf(".") + 1);
+            File fileToPatch = similarFileExists(fileNameToSearch, folderToSearchIn);
+            if(fileToPatch.exists()){
+                return fileToPatch;
+            }
+        }
+
+        throw new FileNotFoundException("Smali file to patch not found!");
     }
 }
