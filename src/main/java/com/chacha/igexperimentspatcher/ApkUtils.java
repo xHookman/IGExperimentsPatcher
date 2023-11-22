@@ -45,7 +45,7 @@ public class ApkUtils {
         File decodedSmali = new File(getOutDir().getAbsolutePath() + File.separator + dexFile.getName().replace(".dex", ""));
 
         if(decodedSmali.exists()) {
-            System.out.println("smali folder already exists, skipping decompilation");
+            System.out.println(decodedSmali.getName() + " already exists, skipping decompilation");
             return decodedSmali;
         }
 

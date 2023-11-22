@@ -25,7 +25,7 @@ public class Patcher {
     /**
      * Find the class and method to patch
      */
-    public void findWhatToPatch() throws IOException, AndrolibException {
+    public void findWhatToPatch() throws IOException {
         List<Future<?>> futures = new ArrayList<>();
 
         apkUtils.extractDexFiles();
@@ -37,14 +37,13 @@ public class Patcher {
 
                 try {
                     decodedSmali = apkUtils.decodeSmali(smaliClass);
-                    System.out.println("Decompiled " + smaliClass.getName());
                 } catch (AndrolibException ex) {
                     throw new RuntimeException(ex);
                 }
 
                 List<File> f = getFilesCallingExperiments(decodedSmali);
                 if (f.isEmpty()) {
-                    System.err.println("\nNo file calling experiments found in " + decodedSmali.getPath());
+                    System.err.println("\nNo file calling experiments found in " + decodedSmali.getName());
                 } else {
                     try {
                         executor.shutdownNow();
@@ -93,7 +92,7 @@ public class Patcher {
      * @return the file containing the call to the method that enable experiments
      */
     public List<File> getFilesCallingExperiments(File folderToSearchIn) {
-        System.out.println("Searching for experiments file in " + folderToSearchIn + "...");
+        System.out.println("Searching for experiments file in " + folderToSearchIn.getName() + "...");
         return FileTextSearch.searchFilesWithText(folderToSearchIn, "const-string v0, \"is_employee\"");
     }
 
