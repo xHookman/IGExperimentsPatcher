@@ -2,7 +2,7 @@
 
 Enable developer options & experiments access in Instagram apk!
 
-Or you can also just get the method name and class name for my [Xposed module](https://github.com/xHookman/IGExperiments) instead of patching an existing apk
+*You can also just get the class, method and arg type for my [Xposed module](https://github.com/xHookman/IGExperiments) instead of patching an apk*
 
 ## Usage
 
@@ -12,7 +12,7 @@ Open a terminal in the same folder and:
 
 ```bash
   java -jar IGExperimentsPatcher.jar -p <path to apk>
-  Use -x option to only show class, method and argument to use in my Xposed module
+  Use -x option to only show class, method and argument type to use in my Xposed module
 ```
 
 Next you will need to sign your patched apk, you can use [Uber Apk Signer](https://github.com/patrickfav/uber-apk-signer/releases) if you don't want to annoy you with keys etc
@@ -22,3 +22,8 @@ Next you will need to sign your patched apk, you can use [Uber Apk Signer](https
 ```
 
 In app, long press home button to show the dev options entry.
+
+## Libraries
+
+#### *[Apktool](https://github.com/iBotPeaches/Apktool)*
+#### *[Zip4j](https://github.com/srikanth-lingala/zip4j)*
