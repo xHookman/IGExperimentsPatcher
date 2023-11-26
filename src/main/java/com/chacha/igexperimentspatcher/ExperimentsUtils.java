@@ -15,6 +15,10 @@ public class ExperimentsUtils {
         boolean inMethod = false;
         WhatToPatch whatToPatch = new WhatToPatch();
         String mtdCallingMtdToPatch = getMtdCallingMtdToPatch(fileCallingExperiments);
+        if(mtdCallingMtdToPatch == null){
+            throw new Exception("Method calling the method to patch not found");
+        }
+
         System.out.println("Searching call of method enabling dev options in " + fileCallingExperiments.getName() + "...");
         //invoke-static {p1}, LX/19o;->A00(LX/0pg;)Z
         //invoke-static {p1}, LX/12U;->A00(Lcom/instagram/service/session/UserSession;)Z
@@ -25,7 +29,9 @@ public class ExperimentsUtils {
             String line;
 
             while ((line = reader.readLine()) != null) {
+
                 if (line.trim().startsWith(mtdCallingMtdToPatch)) {
+
                     // Start of a new method
                     inMethod = true;
                 } else if (inMethod) {
@@ -71,7 +77,7 @@ public class ExperimentsUtils {
             BufferedReader reader = new BufferedReader(new FileReader(file));
             String line;
             while ((line = reader.readLine()) != null) {
-                if (line.trim().startsWith(".method public static")) {
+                if (line.trim().startsWith(".method public ")) {
                     // Start of a new method
                     method = line;
                     inMethod = true;

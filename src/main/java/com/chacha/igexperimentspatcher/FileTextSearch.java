@@ -32,6 +32,7 @@ public class FileTextSearch {
     }
 
     private static boolean containsText(File file, String searchText) {
+
         try {
             String content = Files.readString(file.toPath(), StandardCharsets.UTF_8);
             return content.contains(searchText);
