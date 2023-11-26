@@ -59,7 +59,7 @@ public class FileTextSearch {
     }
     public static File findSmaliFile(WhatToPatch whatToPatch, ApkUtils apkUtils) throws FileNotFoundException {
         String path = whatToPatch.getClassToPatch();
-        File[] classesFolders = apkUtils.getOutDir().listFiles((dir, name) -> name.startsWith(ApkUtils.DEX_BASE_NAME) && !name.endsWith(".dex"));
+        File[] classesFolders = apkUtils.getClassesFolders();
 
         if(classesFolders == null){
             throw new RuntimeException("No classes folder not found in " + apkUtils.getOutDir().getAbsolutePath());
@@ -74,7 +74,7 @@ public class FileTextSearch {
             File folderToSearchIn = new File(folder + File.separator + path.substring(0, path.lastIndexOf(".")));
             String fileNameToSearch = path.substring(path.lastIndexOf(".") + 1);
             File fileToPatch = similarFileExists(fileNameToSearch, folderToSearchIn);
-            if(fileToPatch.exists()){
+            if(fileToPatch!=null && fileToPatch.exists()){
                 return fileToPatch;
             }
         }
