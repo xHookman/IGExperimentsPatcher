@@ -16,7 +16,7 @@ public class Patcher {
     private final ExperimentsUtils experimentsUtils;
     private WhatToPatch whatToPatch;
     private File smaliToRecompile;
-    public Patcher(File apkFile){
+    public Patcher(File apkFile) {
         this.apkFile = apkFile;
         this.apkUtils = new ApkUtils(apkFile);
         this.experimentsUtils = new ExperimentsUtils();
@@ -47,7 +47,12 @@ public class Patcher {
                 } else {
                     try {
                         executor.shutdownNow();
-                        this.whatToPatch = experimentsUtils.findWhatToPatch(f.get(0));
+                        for(File fileToTryWith : f){
+                            this.whatToPatch = experimentsUtils.findWhatToPatch(fileToTryWith);
+                            if(whatToPatch != null){
+                                break;
+                            }
+                        }
                     } catch (Exception e) {
                         System.err.println("\nError while finding what to patch: \n\n" + e.getMessage());
                     }
@@ -63,6 +68,11 @@ public class Patcher {
             } catch (Exception e) {
                 e.printStackTrace(); // Handle exceptions as needed
             }
+        }
+
+        if(whatToPatch==null) {
+            System.err.println("Sorry an error occured: the method to patch was not found. You can try with another Instagram version :/");
+            return;
         }
 
         System.out.println("Class to patch: " + whatToPatch.getClassToPatch());

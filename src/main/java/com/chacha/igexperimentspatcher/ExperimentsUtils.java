@@ -52,7 +52,7 @@ public class ExperimentsUtils {
             throw new RuntimeException(e);
         }
 
-        throw new Exception("No method found for experiments");
+        throw new Exception("No method found for experiments in " + fileCallingExperiments.getName());
     }
 
     private void extractThingsToPatch(Matcher matchedLine, WhatToPatch whatToPatch){

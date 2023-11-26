@@ -7,7 +7,6 @@ import java.io.IOException;
 
 public class Main {
     public static void main(String[] args) throws BrutException, IOException {
-        System.out.println("Hello world!");
         if(args.length == 0) {
             showUsageError();
             return;
@@ -32,7 +31,14 @@ public class Main {
             return;
         }
 
-        Patcher patcher = new Patcher(new File(path));
+        File fileToPatch = new File(path);
+
+        if(!(fileToPatch.exists())){
+            System.err.println("File not found: " + path);
+            return;
+        }
+
+        Patcher patcher = new Patcher(fileToPatch);
 
         if(forXposed)
             patcher.findWhatToPatch();
