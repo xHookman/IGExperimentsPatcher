@@ -1,6 +1,6 @@
 # IGExperimentsPatcher
 
-Enable developer options & experiments access in Instagram apk!
+Enable developer options & experiments access in Instagram/Threads apk!
 
 *You can also just get the class, method and arg type for my [Xposed module](https://github.com/xHookman/IGExperiments) instead of patching an apk*
 
